@@ -5,7 +5,7 @@ class GradeManager:
     def __init__(self) -> None:
         """
         Initialize the grade manager with appropriate defaultdict structures
-        Use defaultdict top avoid key existence checks
+        Use defaultdict to avoid key existence checks
         """
 
         self.grades = defaultdict(list)
@@ -32,28 +32,51 @@ class GradeManager:
         return total_marks/total_subjects
 
     def get_subject_statistics(self, subject) -> dict :
-        print(self.grades)
         total = 0
         highest = 0
         lowest = 0
         marks = []
 
         for student_name in self.grades:
-            for marks_tuple in self.grades[student_name]:
-                if marks_tuple[0] == subject:
-                    marks.append(marks_tuple[1])
-        marks = marks.sort()
-        print(marks)
-        return {'average': 0.00, 'highest': 0.00, 'lowest': 0.00, 'student_count': 0}
+            for (sub, grd) in self.grades[student_name]:
+                if sub == subject:
+                    total += grd
+                    marks.append(grd)
+        marks.sort()
+        return {'average': total/len(marks), 'highest': marks[-1], 'lowest': marks[0], 'student_count': len(marks)}
 
     def get_top_students(self,n=3) -> list:
         """Get top N students based on their overall grade"""
-        return [('student_name', 'average_grade')]
+        top_n_students = []
+        
+        for name, grades in self.grades.items():
+            total_marks = 0
+            subjects = len(grades)
+            for (subject, mark) in grades:
+                total_marks = total_marks + mark
+            
+            avg = total_marks/subjects
+            top_n_students.append((name, round(avg,2)))
+        
+        top_n_students.sort(key= lambda student: student[1], reverse=True)
+
+        return top_n_students[0:n]
 
     def get_failing_students(self, passing_grade=60) -> list:
         """Get students who are failing (average below passing grade)"""
-        return [('student_name', 'average_grade')]
+        failing_students = []
+        
+        for name, grades in self.grades.items():
+            total_marks = 0
+            subjects = len(grades)
+            for (subject, mark) in grades:
+                total_marks = total_marks + mark
+            
+            avg = round(total_marks/subjects,2)
+            if avg < passing_grade:
+                failing_students.append((name, round(avg,2)))
 
+        return failing_students
 
 
 manager = GradeManager()
@@ -71,6 +94,6 @@ for student, subject, grade in grades_data:
 
 # Test all methods
 # print("Alice's average:", manager.get_student_average("Alice"))
-print("Math statistics:", manager.get_subject_statistics("Math"))
+# print("Math statistics:", manager.get_subject_statistics("Math"))
 # print("Top 3 students:", manager.get_top_students(3))
-# print("Failing students:", manager.get_failing_students(75))
+print("Failing students:", manager.get_failing_students(75))
